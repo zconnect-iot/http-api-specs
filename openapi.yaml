@@ -1,0 +1,499 @@
+
+openapi: 3.0.0
+info:
+  title: ZConnect API
+  description: The base endpoints which are built in to ZConnect 2.
+  version: 3.0.0
+servers:
+- url: http://localhost/api
+  variables: {}
+
+paths:
+
+  /v3/device:
+    get:
+      tags:
+        - Device
+      summary: Fetch a list of devices
+      parameters:
+        - $ref: '#/components/parameters/owner'
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/page_size'
+        - $ref: '#/components/parameters/stub'
+      responses:
+        200:
+          $ref: '#/components/responses/DeviceList'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+    post:
+      tags:
+        - Device
+      summary: Create a new device
+      requestBody:
+        description: A new device definition
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Device'
+      responses:
+        200:
+          $ref: '#/components/responses/Device'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        400:
+          $ref: '#/components/responses/BadRequest'
+
+  /v3/device/{device_id}:
+    get:
+      tags:
+        - Device
+      summary: Fetch a specific device
+      responses:
+        200:
+          $ref: '#/components/responses/DeviceList'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        404:
+          $ref: '#/components/responses/NotFound'
+    put: &device_update
+      tags:
+        - Device
+      summary: Update part of or a whole device object
+      requestBody:
+        description: A new device definition
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Device'
+      responses:
+        200:
+          $ref: '#/components/responses/Device'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        400:
+          $ref: '#/components/responses/BadRequest'
+    patch: *device_update # Patch does the same
+
+components:
+
+  schemas:
+    # NOTE: models here often inherit from a Base model
+    # which is so that we can update the Base models as
+    # ZC2 evolves, without making too many changes to the
+    # Underlying models. Endpoints use the inherited versions
+    User:
+      name: User
+      allOf:
+        - $ref: '#/components/schemas/BaseUser'
+
+    Group:
+      name: Group
+      allOf:
+        - $ref: '#/components/schemas/BaseGroup'
+
+    Device:
+      name: Device
+      allOf:
+        - $ref: '#/components/schemas/BaseDevice'
+
+    Product:
+      name: Product
+      allOf:
+        - $ref: '#/components/schemas/BaseProduct'
+
+    TimelineEntry:
+      name: TimelineEntry
+      oneOf:
+        - $ref: '#/components/schemas/BaseTimelineEntry'
+
+    ### ZC2 builtin schemas
+    UserID:
+      title: UserID
+      allOf:
+        - $ref: '#/components/schemas/ObjectID'
+
+    BaseUser: # From Django
+      title: User
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/AbstractModel'
+        - required:
+          - name # todo
+          - id
+          properties:
+            id:
+              $ref: '#/components/schemas/UserID'
+
+
+    GroupID:
+      title: GroupID
+      allOf:
+        - $ref: '#/components/schemas/ObjectID'
+
+    BaseGroup:
+      title: Group
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/AbstractModel'
+        - properties:
+            name:
+              type: string
+
+    DeviceID:
+      title: DeviceID
+      allOf:
+        - $ref: '#/components/schemas/ObjectID'
+
+    BaseDevice:
+      title: Device
+      allOf:
+      - $ref: '#/components/schemas/AbstractOwnedModel'
+      - properties:
+          product:
+            $ref: '#/components/schemas/ProductID'
+          device_name:
+            type: string
+          connected:
+            type: boolean
+          last_seen:
+            type: string
+            format: date-time
+
+    EventDefinition:
+      title: EventDefinition
+      description: An event definition
+      allOf:
+        - $ref: '#/components/schemas/AbstractModel'
+        - properties:
+            enabled:
+              type: boolean
+              example: true
+              description: Should this event be triggered when the conditions are met?
+            condition:
+              type: string
+              description: A ZC2 event condition string
+            actions:
+              type: object
+              description: An object of event definitions
+              example:
+                add_timeline_entry: {"template_id": 122}
+            debounce_window:
+              type: number
+              example: 1000.3
+              description: A number of seconds which this event should not trigger again for after being triggered
+            scheduled: # TODO, we can probably change or remove this.
+              type: boolean
+              description: Should be true if the event is scheduled
+            single_trigger:
+              type: boolean
+              default: false
+              description: True if the event definition should be destroyed the first time it's triggered. For one time actions.
+
+
+
+    ProductID:
+      title: ProductID
+      allOf:
+        - $ref: '#/components/schemas/ObjectID'
+
+    BaseProduct:
+      title: Product
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/ProductID'
+        version:
+          type: string
+          description: A string of the Semver
+        name:
+          type: string
+          description: The product name
+        iot_name:
+          type: string
+          description: The product name on the IoT broker (e.g. watson IoT)
+        sku:
+          type: string
+          description: The product SKU
+        manufacturer:
+          type: string
+          description: The produt manufacturer
+        url:
+          type: string
+          description: A product homepage
+        support_url:
+          type: string
+          description: Link to some kind of product help page
+        server_side_events:
+          type: boolean
+          default: false
+          description: Should events be triggered from messages on the serverside?
+
+    ProductFirmwareID:
+      title: ProductFirmwareID
+      allOf:
+        - $ref: '#/components/schemas/ObjectID'
+
+    ProductFirmware:
+      title: ProductFirmware
+      type: object
+      allOf:
+      - $ref: '#/components/schemas/AbstractModel'
+      - required:
+          - id
+          - product
+          - major
+          - minor
+          - patch
+        properties:
+          product:
+            $ref: '#/components/schemas/ProductID'
+          download_url:
+            type: string
+            description: The url where the image can be downloaded from
+          major:
+            type: integer
+            description: Semver - major
+          minor:
+            type: integer
+            description: Semver - minor
+          patch:
+            type: integer
+            description: Semver - patch
+          prerelease:
+            type: string
+            description: Semver - prerelease
+          build:
+            type: string
+            description: Semver - build id
+
+    UpdateExecution:
+      title: UpdateExecution
+      type: object
+      allOf:
+      - $ref: '#/components/schemas/AbstractModel'
+      - properties:
+          product_firmware:
+            $ref: '#/components/schemas/ProductFirmwareID'
+          enabled:
+            type: boolean
+          strategy_class:
+            type: string
+            description: The name of the class
+
+    LocationID:
+      title: LocationID
+      allOf:
+        - $ref: '#/components/schemas/ObjectID'
+
+    Location:
+      title: Location
+      type: object
+      allOf:
+      - $ref: '#/components/schemas/AbstractOwnedModel'
+      - properties:
+          timezone:
+            type: string
+          latitude:
+            type: number
+          longitude:
+            type: number
+          organisation:
+            type: string
+          country:
+            type: string
+          locality:
+            type: string
+          region:
+            type: string
+          pobox:
+            type: string
+          street_address:
+            type: string
+          postalcode:
+            type: string
+
+    TimelineEntryID:
+      title: MessageID
+      allOf:
+        - $ref: '#/components/schemas/ObjectID'
+
+    BaseTimelineEntry:
+      title: BaseTimelineEntry
+      type: object
+      allOf:
+      - $ref: '#/components/schemas/AbstractModel'
+      - properties:
+          message:
+            type: string
+            description: "Plain text message string for showing to the user"
+          severity:
+            type: number
+            description: Log level, e.g. 10 = debug, 40 = error.
+          category:
+            type: string
+            description: Arbitrary string, however this may be important to other apps for grouping messages or setting icons.
+          try_notify:
+            type: string
+            description: Should this message be sent to a user
+
+    ObjectID:
+      title: ObjectID
+      type: string
+      example: 12
+      description: This will often be numerical, however should be treated as a string.
+
+    AbstractModel:
+      title: AbstractModel
+      type: object
+      required:
+        - _id
+        - created_at
+        - updated_at
+      properties:
+        id:
+          $ref: '#/components/schemas/ObjectID'
+        created_at:
+          $ref: '#/components/schemas/DateTime'
+        updated_at:
+          $ref: '#/components/schemas/DateTime'
+
+    AbstractOwnedModel:
+      title: AbstractOwnedModel
+      allOf:
+      - $ref: '#/components/schemas/AbstractModel'
+      - required:
+        - owner
+        type: object
+        properties:
+          owner:
+            $ref: '#/components/schemas/UserID'
+
+    Error:
+      title: Error
+      required:
+      - title
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+
+    DateTime:
+      type: string
+      description: An ISO8601 string.
+      format: date-time
+      example: "1970-01-01T00:00:00Z"
+    ### end  ZC2 builtin schemas
+
+  securitySchemes:
+    ### ZC2 builtin securitySchemas
+    jwt:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    ### end ZC2 builtin securitySchemas
+
+  parameters:
+
+
+    ### ZC2 builtin parameters
+
+    # filtering
+    owner:
+      name: owner
+      in: query
+      description: filter by who owns the entities (admin only)
+      schema:
+        $ref: '#/components/schemas/ObjectID'
+
+    # pagination
+    page:
+      name: page
+      in: query
+      description: The page of results to return
+      schema:
+        type: integer
+        default: 0
+
+    page_size:
+      name: page_size
+      in: query
+      description: The number of results per page
+      schema:
+        type: integer
+        default: 10
+
+    # TODO - stubbing
+    stub:
+      name: stub
+      in: query
+      description: Should results be returned stubbed? Useful for autocomplete results etc.
+      schema:
+        type: boolean
+        default: false
+
+    # time filtering
+    start:
+      name: start
+      in: query
+      description: optional start time
+      schema:
+        $ref: '#/components/schemas/DateTime'
+
+    end:
+      name: start
+      in: query
+      description: optional start time
+      schema:
+        $ref: '#/components/schemas/DateTime'
+    ### end ZC2 builtin parameters
+
+  responses:
+
+    ### ZC2 builtin responses
+    DeviceList:
+      description: A list of devices
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/Device'
+
+    Device:
+      description: A device
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Device'
+
+    Unauthorized:
+      description: There was an authentication Error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    MajorError:
+      description: Internal error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    BadRequest:
+      description: A bad request was made, normally incorrect data
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    NotFound:
+      description: Not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    ### end ZC2 builtin responses
