@@ -48,6 +48,8 @@ paths:
       tags:
         - Device
       summary: Fetch a specific device
+      parameters:
+        - $ref: '#/components/parameters/device'
       responses:
         200:
           $ref: '#/components/responses/DeviceList'
@@ -58,7 +60,9 @@ paths:
     put: &device_update
       tags:
         - Device
-      summary: Update part of or a whole device object
+      summary: Update a whole device object
+      parameters:
+        - $ref: '#/components/parameters/device'
       requestBody:
         description: A new device definition
         content:
@@ -72,7 +76,109 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         400:
           $ref: '#/components/responses/BadRequest'
-    patch: *device_update # Patch does the same
+    patch:
+      <<: *device_update # Patch does the same
+      summary: Update part of a Device
+
+  /v3/device/{device_id}/data:
+    get:
+      tags:
+        - Device
+      summary: Get timeseries data from the device
+      parameters:
+        - $ref: '#/components/parameters/device'
+        - $ref: '#/components/parameters/start'
+        - $ref: '#/components/parameters/end'
+        - $ref: '#/components/parameters/resolution'
+      responses:
+        200:
+          $ref: '#/components/responses/TimeSeriesData'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        400:
+          $ref: '#/components/responses/BadRequest'
+
+  /v3/device/{device_id}/data/latest:
+    get:
+      tags:
+        - Device
+      summary: Get just the latest values from the device
+      parameters:
+        - $ref: '#/components/parameters/device'
+      responses:
+        200:
+          $ref: '#/components/responses/TimeSeriesData'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        400:
+          $ref: '#/components/responses/BadRequest'
+
+  /v3/product:
+    get:
+      tags:
+        - Product
+      summary: Fetch a list of products
+      parameters:
+        - $ref: '#/components/parameters/owner'
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/page_size'
+        - $ref: '#/components/parameters/stub'
+      responses:
+        200:
+          $ref: '#/components/responses/productList'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+    post:
+      tags:
+        - Product
+      summary: Create a new product
+      requestBody:
+        description: A new product definition
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/product'
+      responses:
+        200:
+          $ref: '#/components/responses/product'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        400:
+          $ref: '#/components/responses/BadRequest'
+
+  /v3/product/{product_id}:
+    get:
+      tags:
+        - Product
+      summary: Fetch a specific product
+      responses:
+        200:
+          $ref: '#/components/responses/productList'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        404:
+          $ref: '#/components/responses/NotFound'
+    put: &product_update
+      tags:
+        - Product
+      summary: Update a whole product object
+      requestBody:
+        description: A new product definition
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/product'
+      responses:
+        200:
+          $ref: '#/components/responses/product'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        400:
+          $ref: '#/components/responses/BadRequest'
+    patch:
+      <<: *product_update # Patch does the same
+      summary: Update part of a product
+
 
 components:
 
@@ -150,7 +256,7 @@ components:
       - $ref: '#/components/schemas/AbstractOwnedModel'
       - properties:
           product:
-            $ref: '#/components/schemas/ProductID'
+            $ref: '#/components/schemas/ProductStub'
           device_name:
             type: string
           connected:
@@ -158,6 +264,35 @@ components:
           last_seen:
             type: string
             format: date-time
+          sensors_current:
+            type: object
+            description: A key value object containing the latest sensor readings
+            example: {"temp": 12.2, "hum": 98} # TODO
+
+    DeviceStub:
+      title: DeviceStub
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/ObjectID'
+        name:
+          type: string
+          example: "Device120"
+
+    TimeSeriesData:
+      title: TimeSeriesData
+      type: object
+      additionalProperties:
+        type: array
+        items:
+          type: object
+          properties:
+            id:
+              $ref: '#/components/schemas/ObjectID'
+            value:
+              type: number
+            ts:
+              $ref: '#/components/schemas/DateTime'
 
     EventDefinition:
       title: EventDefinition
@@ -195,6 +330,16 @@ components:
       title: ProductID
       allOf:
         - $ref: '#/components/schemas/ObjectID'
+
+    ProductStub:
+      title: ProductStub
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/ObjectID'
+        name:
+          type: string
+          example: "Lawnmower"
 
     BaseProduct:
       title: Product
@@ -399,6 +544,13 @@ components:
 
     ### ZC2 builtin parameters
 
+    device_id:
+      name: device_id
+      in: query
+      description: A valid device id
+      schema:
+        $ref: '#/components/schemas/DeviceID'
+
     # filtering
     owner:
       name: owner
@@ -424,7 +576,7 @@ components:
         type: integer
         default: 10
 
-    # TODO - stubbing
+    # stubbing
     stub:
       name: stub
       in: query
@@ -442,11 +594,18 @@ components:
         $ref: '#/components/schemas/DateTime'
 
     end:
-      name: start
+      name: end
       in: query
       description: optional start time
       schema:
         $ref: '#/components/schemas/DateTime'
+
+    resolution:
+      name: resolution
+      in: query
+      description: optional desired resolution in seconds
+      schema:
+        type: integer
     ### end ZC2 builtin parameters
 
   responses:
@@ -467,6 +626,22 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/Device'
+
+    ProductList:
+      description: A list of Products
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/Product'
+
+    Product:
+      description: A Product
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Product'
 
     Unauthorized:
       description: There was an authentication Error
