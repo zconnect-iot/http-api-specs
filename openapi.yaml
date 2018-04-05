@@ -253,6 +253,41 @@ paths:
     patch:
       <<: *product_update # Patch does the same
       summary: Update part of a product
+
+  /v3/users:
+    get:
+      tags:
+        - Users
+      summary: List users
+
+    post:
+      tags:
+        - Users
+      summary: Create a new user (can be done by anon)
+
+  /v3/users/{user_id}:
+    get:
+      tags:
+        - Users
+      summary: Get a specific user
+
+    put:
+      tags:
+        - Users
+      summary: Update a user
+
+  /v3/users/login:
+    post:
+      tags:
+        - Auth
+      summary: Login
+
+  /v3/users/refresh_token:
+    post:
+      tags:
+        - Auth
+      summary: Get a new JWT if logged in already.
+
   ### end ZC2 builtin paths
 
 components:
