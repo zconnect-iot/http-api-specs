@@ -10,6 +10,7 @@ servers:
 
 paths:
 
+  ### ZC2 builtin paths
   /v3/device:
     get:
       tags:
@@ -49,7 +50,7 @@ paths:
         - Device
       summary: Fetch a specific device
       parameters:
-        - $ref: '#/components/parameters/device'
+        - $ref: '#/components/parameters/device_id'
       responses:
         200:
           $ref: '#/components/responses/DeviceList'
@@ -62,7 +63,7 @@ paths:
         - Device
       summary: Update a whole device object
       parameters:
-        - $ref: '#/components/parameters/device'
+        - $ref: '#/components/parameters/device_id'
       requestBody:
         description: A new device definition
         content:
@@ -79,6 +80,80 @@ paths:
     patch:
       <<: *device_update # Patch does the same
       summary: Update part of a Device
+
+  /v3/device/{device_id}/event_defs:
+    get:
+      tags:
+        - Device
+      summary: Fetch EventDefinitions for a Device
+      parameters:
+        - $ref: '#/components/parameters/device'
+        - $ref: '#/components/parameters/ref'
+      responses:
+        200:
+          $ref: '#/components/responses/EventDefinitionList'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        404:
+          $ref: '#/components/responses/NotFound'
+    post:
+      tags:
+        - Device
+      summary: Create a new EventDefinition on a device
+      parameters:
+        - $ref: '#/components/parameters/device'
+      requestBody:
+        description: An EventDefinition, withou an id
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EventDefinition'
+      responses:
+        200:
+          $ref: '#/components/responses/EventDefinition'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        404:
+          $ref: '#/components/responses/NotFound'
+
+  /v3/device/{device_id}/event_defs/{event_def_id}:
+    get:
+      tags:
+        - Device
+      summary: Fetch a specific EventDefinition for a Device
+      parameters:
+        - $ref: '#/components/parameters/device'
+        - $ref: '#/components/parameters/event_def_id'
+      responses:
+        200:
+          $ref: '#components/responses/EventDefinition'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        404:
+          $ref: '#/components/responses/NotFound'
+    put: &event_def_update
+      tags:
+        - Device
+      summary: Update a whole EventDefinition on a device
+      parameters:
+        - $ref: '#/components/parameters/device'
+        - $ref: '#/components/parameters/event_def_id'
+      requestBody:
+        description: An EventDefinition, withou an id
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EventDefinition'
+      responses:
+        200:
+          $ref: '#/components/responses/EventDefinition'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        404:
+          $ref: '#/components/responses/NotFound'
+    patch:
+      <<: *event_def_update
+      summary: Update part of an EventDefinition on a device
 
   /v3/device/{device_id}/data:
     get:
@@ -178,7 +253,7 @@ paths:
     patch:
       <<: *product_update # Patch does the same
       summary: Update part of a product
-
+  ### end ZC2 builtin paths
 
 components:
 
@@ -209,7 +284,7 @@ components:
 
     TimelineEntry:
       name: TimelineEntry
-      oneOf:
+      allOf:
         - $ref: '#/components/schemas/BaseTimelineEntry'
 
     ### ZC2 builtin schemas
@@ -293,6 +368,11 @@ components:
               type: number
             ts:
               $ref: '#/components/schemas/DateTime'
+
+    EventDefID:
+      title: EventDefID
+      allOf:
+        - $ref: '#/components/schemas/ObjectID'
 
     EventDefinition:
       title: EventDefinition
@@ -506,12 +586,23 @@ components:
       title: AbstractOwnedModel
       allOf:
       - $ref: '#/components/schemas/AbstractModel'
-      - required:
-        - owner
-        type: object
-        properties:
-          owner:
-            $ref: '#/components/schemas/UserID'
+      #- required:
+      #  - groups
+      #  type: object
+      #  properties:
+      #    groups:
+      #      type: array
+      #      items:
+      #        $ref: '#/components/schemas/PremissionGroup'
+
+    # Not used at the moment
+    PremissionGroup:
+      type: object
+      properties:
+        name:
+          type: string
+          description: The name of the group
+          example: my-great-group
 
     Error:
       title: Error
@@ -550,6 +641,13 @@ components:
       description: A valid device id
       schema:
         $ref: '#/components/schemas/DeviceID'
+
+    event_def_id:
+      name: event_def_id
+      in: query
+      description: A valid event_def id
+      schema:
+        $ref: '#/components/schemas/EventDefID'
 
     # filtering
     owner:
@@ -606,19 +704,55 @@ components:
       description: optional desired resolution in seconds
       schema:
         type: integer
+
+    # ref filtering for event definitions
+    ref:
+      name: ref
+      in: query
+      description: Filter the list of event definitions returned based on the ref. `*` can be used as a wildcard at the start or end of a string, e.g. `?ref=ac_actions:*`
+      schema:
+        type: string
+        #pattern: "*?\w+*?"
+
     ### end ZC2 builtin parameters
 
   responses:
 
     ### ZC2 builtin responses
+    PagedResponse: &paged_response
+      description: A paged response, override the element type and description
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              results:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Device'
+              count:
+                type: integer
+                description: The total number of results from all pages
+                example: 100
+              previous:
+                type: string
+                description: URL of the previous page
+                example: http://testserver/api/v3/devices/?page=2&page_size=2
+              next:
+                type: string
+                description: URL of the next page
+                example: http://testserver/api/v3/devices/?page=2&page_size=2
+
     DeviceList:
+      <<: *paged_response
       description: A list of devices
       content:
         application/json:
           schema:
-            type: array
-            items:
-              $ref: '#/components/schemas/Device'
+            properties:
+              results:
+                items:
+                  $ref: '#/components/schemas/Device'
 
     Device:
       description: A device
@@ -627,14 +761,32 @@ components:
           schema:
             $ref: '#/components/schemas/Device'
 
-    ProductList:
-      description: A list of Products
+    EventDefinitionList:
+      description: A list of EventDefinitions
       content:
         application/json:
           schema:
             type: array
             items:
-              $ref: '#/components/schemas/Product'
+              $ref: '#/components/schemas/EventDefinition'
+
+    EventDefinition:
+      description: An EventDefinition
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/EventDefinition'
+
+    ProductList:
+      <<: *paged_response
+      description: A list of products
+      content:
+        application/json:
+          schema:
+            properties:
+              results:
+                items:
+                  $ref: '#/components/schemas/Product'
 
     Product:
       description: A Product
