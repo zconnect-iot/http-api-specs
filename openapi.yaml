@@ -8,6 +8,9 @@ servers:
 - url: http://localhost/api
   variables: {}
 
+security:
+  - jwt: []
+
 paths:
 
   ### ZC2 builtin paths
@@ -245,7 +248,7 @@ paths:
               $ref: '#/components/schemas/product'
       responses:
         200:
-          $ref: '#/components/responses/product'
+          $ref: '#/components/responses/Product'
         401:
           $ref: '#/components/responses/Unauthorized'
         400:
@@ -259,47 +262,122 @@ paths:
       tags:
         - Users
       summary: List users
+      parameters:
+        - $ref: '#/components/parameters/stub'
+      responses:
+        200:
+          $ref: '#/components/responses/UserList'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        400:
+          $ref: '#/components/responses/BadRequest'
 
     post:
       tags:
         - Users
+      security: []
       summary: Create a new user (can be done by anon)
+      requestBody:
+        description: A new user
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        200:
+          $ref: '#/components/responses/User'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        400:
+          $ref: '#/components/responses/BadRequest'
 
   /v3/users/{user_id}:
     get:
       tags:
         - Users
       summary: Get a specific user
+      parameters:
+        - $ref: '#/components/parameters/stub'
+        - $ref: '#/components/parameters/user_id'
+      responses:
+        200:
+          $ref: '#/components/responses/User'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        400:
+          $ref: '#/components/responses/BadRequest'
 
-    put:
+    put: &user_update
       tags:
         - Users
       summary: Update a user
+      parameters:
+        - $ref: '#/components/parameters/user_id'
+      requestBody:
+        description: A User object
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        200:
+          $ref: '#/components/responses/User'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        400:
+          $ref: '#/components/responses/BadRequest'
+
+    patch:
+      <<: *user_update
+      summary: Update part of a User object
 
   /v3/users/reset_password:
     post:
       tags:
         - Auth
-      summary: Send a password reset email
+      summary: Send a password reset email - Awaiting spec
 
   /v3/users/login:
-    #https://github.com/davesque/django-rest-framework-simplejwt
     post:
       tags:
         - Auth
       summary: Login
-
-  /v3/users/logout:
-    post:
-      tags:
-        - Auth
-      summary: Login
+      security: []
+      requestBody:
+        description: A username/password
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  example: test@example.com
+                  description: A User's email address
+                password:
+                  type: string
+                  example: 12345678
+                  description: A users's password
+      responses:
+        200:
+          $ref: '#/components/responses/Token'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        400:
+          $ref: '#/components/responses/BadRequest'
 
   /v3/users/refresh_token:
-    post:
+    get:
       tags:
         - Auth
-      summary: Get a new JWT if logged in already.
+      summary: Get a new JWT if logged in already. Used to keep a login session alive longer.
+      responses:
+        200:
+          $ref: '#/components/responses/Token'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        400:
+          $ref: '#/components/responses/BadRequest'
 
   ### end ZC2 builtin paths
 
@@ -652,6 +730,20 @@ components:
           description: The name of the group
           example: my-great-group
 
+    Token:
+      title: Access Token
+      type: object
+      properties:
+        token:
+          type: string
+          description: A JWT for the login, to be used as a bearer token
+        status:
+          type: string
+          example: "Logged In"
+        password_reset_required:
+          type: boolean
+          description: Does a user need to reset their password
+
     Error:
       title: Error
       required:
@@ -682,6 +774,12 @@ components:
 
 
     ### ZC2 builtin parameters
+    user_id:
+      name: user_id
+      in: query
+      description: A valid user_id
+      schema:
+        $ref: '#/components/schemas/UserID'
 
     device_id:
       name: device_id
@@ -843,6 +941,31 @@ components:
           schema:
             $ref: '#/components/schemas/Product'
 
+    UserList:
+      <<: *paged_response
+      description: A list of Users
+      content:
+        application/json:
+          schema:
+            properties:
+              results:
+                items:
+                  $ref: '#/components/schemas/User'
+
+    User:
+      description: A User
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/User'
+
+    Token:
+      description: A login token
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Token'
+
     Unauthorized:
       description: There was an authentication Error
       content:
@@ -870,5 +993,6 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/Error'
+
 
     ### end ZC2 builtin responses
