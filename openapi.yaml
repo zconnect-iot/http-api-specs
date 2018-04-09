@@ -276,7 +276,20 @@ paths:
         - Users
       summary: Update a user
 
+  /v3/users/reset_password:
+    post:
+      tags:
+        - Auth
+      summary: Send a password reset email
+
   /v3/users/login:
+    #https://github.com/davesque/django-rest-framework-simplejwt
+    post:
+      tags:
+        - Auth
+      summary: Login
+
+  /v3/users/logout:
     post:
       tags:
         - Auth
