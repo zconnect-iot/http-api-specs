@@ -460,11 +460,17 @@ components:
             $ref: '#/components/schemas/ProductStub'
           device_name:
             type: string
-          connected:
+          online:
             type: boolean
+            description: >
+              Is the device online and connected to ZConnect?
+              In some cases this is updated periodically (e.g. if the
+              device sends data over HTTP). In other cases this is updated
+              by connect/disconnect events from an IoT broker.
           last_seen:
             type: string
             format: date-time
+            description: The last time that the device sent data. Mainly relevant when `online==False`.
           sensors_current:
             type: object
             description: A key value object containing the latest sensor readings
