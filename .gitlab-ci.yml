@@ -42,4 +42,4 @@ deploy:
           </body>\
         </html>" > www/index.html
     - cp openapi.yaml www/
-    - scp -p2223 www staging.zoetrope.io:/home/docs/$CI_PROJECT_NAME
+    - scp -P2223 www staging.zoetrope.io:/home/docs/$CI_PROJECT_NAME
