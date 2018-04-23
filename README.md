@@ -10,7 +10,7 @@ The easiest way to get viewing/editing is to install "Redoc up", which will allo
 
 Install:
 ```
-npm install -g redocup
+npm install -g https://github.com/ZoetropeLabs/redocup
 ```
 
 Run in your specs repo:
