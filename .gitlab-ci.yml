@@ -1,0 +1,44 @@
+
+deploy:
+
+  # This is for deploying the API specs using redoc as a way to view it.
+  # NOTES:
+  # 1. You must have a file named openapi.yaml. Nothing else will be deployed
+  # 2. Your project will be available at https://internal.zoetrope.io/<project_name>
+
+  stage: deploy
+  only:
+    - master
+
+  # This requires a debian type base image
+  before_script:
+    - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )'
+    - eval $(ssh-agent -s)
+    - echo "$DEPLOY_SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add - > /dev/null
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+
+  script:
+    - mkdir www
+    - |
+      echo "<\!DOCTYPE html>\
+        <html>\
+          <head>\
+            <title>ReDoc</title>\
+            <meta charset=\"utf-8\"/>\
+            <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\
+            <link href=\"https://fonts.googleapis.com/css?family=Montserrat:300,400,700|Roboto:300,400,700\" rel=\"stylesheet\">\
+            <style>\
+              body {\
+                margin: 0;\
+                padding: 0;\
+              }\
+            </style>\
+          </head>\
+          <body>\
+            <redoc spec-url='openapi.yaml'></redoc>\
+            <script src=\"https://cdn.jsdelivr.net/npm/redoc@next/bundles/redoc.standalone.js\"> </script>\
+          </body>\
+        </html>" > www/index.html
+    - cp openapi.yaml www/
+    - scp -p2223 www staging.zoetrope.io:/home/docs/$CI_PROJECT_NAME

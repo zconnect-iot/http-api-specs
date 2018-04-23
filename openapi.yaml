@@ -985,6 +985,8 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/Error'
+        example:
+          {"error": "Unauthorized", "description": "You are not authorized to access this"}
 
     MajorError:
       description: Internal error
