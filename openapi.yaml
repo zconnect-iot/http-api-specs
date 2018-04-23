@@ -90,7 +90,7 @@ paths:
         - Device
       summary: Fetch EventDefinitions for a Device
       parameters:
-        - $ref: '#/components/parameters/device'
+        - $ref: '#/components/parameters/device_id'
         - $ref: '#/components/parameters/ref'
       responses:
         200:
@@ -104,7 +104,7 @@ paths:
         - Device
       summary: Create a new EventDefinition on a device
       parameters:
-        - $ref: '#/components/parameters/device'
+        - $ref: '#/components/parameters/device_id'
       requestBody:
         description: An EventDefinition, withou an id
         content:
@@ -125,11 +125,11 @@ paths:
         - Device
       summary: Fetch a specific EventDefinition for a Device
       parameters:
-        - $ref: '#/components/parameters/device'
+        - $ref: '#/components/parameters/device_id'
         - $ref: '#/components/parameters/event_def_id'
       responses:
         200:
-          $ref: '#components/responses/EventDefinition'
+          $ref: '#/components/responses/EventDefinition'
         401:
           $ref: '#/components/responses/Unauthorized'
         404:
@@ -139,7 +139,7 @@ paths:
         - Device
       summary: Update a whole EventDefinition on a device
       parameters:
-        - $ref: '#/components/parameters/device'
+        - $ref: '#/components/parameters/device_id'
         - $ref: '#/components/parameters/event_def_id'
       requestBody:
         description: An EventDefinition, withou an id
@@ -164,7 +164,7 @@ paths:
         - Device
       summary: Get timeseries data from the device
       parameters:
-        - $ref: '#/components/parameters/device'
+        - $ref: '#/components/parameters/device_id'
         - $ref: '#/components/parameters/start'
         - $ref: '#/components/parameters/end'
         - $ref: '#/components/parameters/resolution'
@@ -182,7 +182,7 @@ paths:
         - Device
       summary: Get just the latest values from the device
       parameters:
-        - $ref: '#/components/parameters/device'
+        - $ref: '#/components/parameters/device_id'
       responses:
         200:
           $ref: '#/components/responses/TimeSeriesData'
@@ -203,7 +203,7 @@ paths:
         - $ref: '#/components/parameters/stub'
       responses:
         200:
-          $ref: '#/components/responses/productList'
+          $ref: '#/components/responses/ProductList'
         401:
           $ref: '#/components/responses/Unauthorized'
     post:
@@ -215,10 +215,10 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/product'
+              $ref: '#/components/schemas/Product'
       responses:
         200:
-          $ref: '#/components/responses/product'
+          $ref: '#/components/responses/Product'
         401:
           $ref: '#/components/responses/Unauthorized'
         400:
@@ -231,7 +231,7 @@ paths:
       summary: Fetch a specific product
       responses:
         200:
-          $ref: '#/components/responses/productList'
+          $ref: '#/components/responses/ProductList'
         401:
           $ref: '#/components/responses/Unauthorized'
         404:
@@ -245,7 +245,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/product'
+              $ref: '#/components/schemas/Product'
       responses:
         200:
           $ref: '#/components/responses/Product'
@@ -389,27 +389,27 @@ components:
     # ZC2 evolves, without making too many changes to the
     # Underlying models. Endpoints use the inherited versions
     User:
-      name: User
+      title: User
       allOf:
         - $ref: '#/components/schemas/BaseUser'
 
     Group:
-      name: Group
+      title: Group
       allOf:
         - $ref: '#/components/schemas/BaseGroup'
 
     Device:
-      name: Device
+      title: Device
       allOf:
         - $ref: '#/components/schemas/BaseDevice'
 
     Product:
-      name: Product
+      title: Product
       allOf:
         - $ref: '#/components/schemas/BaseProduct'
 
     TimelineEntry:
-      name: TimelineEntry
+      title: TimelineEntry
       allOf:
         - $ref: '#/components/schemas/BaseTimelineEntry'
 
@@ -766,7 +766,7 @@ components:
       description: An ISO8601 string.
       format: date-time
       example: "1970-01-01T00:00:00Z"
-    ### end  ZC2 builtin schemas
+    ### end ZC2 builtin schemas
 
   securitySchemes:
     ### ZC2 builtin securitySchemas
@@ -928,6 +928,13 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/EventDefinition'
+
+    TimeSeriesData:
+      description: Time series data
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/TimeSeriesData'
 
     ProductList:
       <<: *paged_response
