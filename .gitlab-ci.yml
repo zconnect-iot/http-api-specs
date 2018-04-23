@@ -43,4 +43,4 @@ deploy:
           </body>\
         </html>" > www/index.html
     - cp openapi.yaml www/
-    - scp -P2223 www docsuser@staging.zoetrope.io:/home/docs/$CI_PROJECT_NAME
+    - scp -o StrictHostKeyChecking=no -P2223 www docsuser@staging.zoetrope.io:/home/docs/$CI_PROJECT_NAME
