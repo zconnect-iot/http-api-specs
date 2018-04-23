@@ -45,4 +45,4 @@ deploy:
         </html>" > www/index.html
     - cp openapi.yaml www/
     #- scp -o StrictHostKeyChecking=no -P2223 -r -p www docsuser@staging.zoetrope.io:/home/docs/$CI_PROJECT_NAME
-    - rsync --delete -arvce "ssh -o StrictHostKeyChecking=no -p2223" www/ docsuser@staging.zoetrope.io:/home/docs/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/
+    - rsync --delete --relative -arvce "ssh -o StrictHostKeyChecking=no -p2223" www/ docsuser@staging.zoetrope.io:/home/docs/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/
