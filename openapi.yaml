@@ -372,6 +372,7 @@ paths:
         - Auth
       summary: Refresh Token
       description: Get a new JWT if logged in already. Used to keep a login session alive longer.
+      security: []
       requestBody:
         description: The previous token
         content:
@@ -753,13 +754,10 @@ components:
       properties:
         token:
           type: string
-          description: A JWT for the login, to be used as a bearer token
+          description: A JWT with an expiry, to be used as a bearer token
         status:
           type: string
           example: "Logged In"
-        password_reset_required:
-          type: boolean
-          description: Does a user need to reset their password
 
     Error:
       title: Error
