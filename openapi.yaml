@@ -762,7 +762,7 @@ components:
     Error:
       title: Error
       required:
-      - title
+      - detail
       type: object
       properties:
         code:
