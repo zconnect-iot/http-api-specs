@@ -370,16 +370,18 @@ paths:
     post:
       tags:
         - Auth
-      summary: Get a new JWT if logged in already. Used to keep a login session alive longer.
+      summary: Refresh Token
+      description: Get a new JWT if logged in already. Used to keep a login session alive longer.
       requestBody:
         description: The previous token
         content:
-          schema:
-            type: object
-            properties:
-              token:
-                type: string
-                description: The old JWT, with a valid `refresh` claim
+          application/json:
+            schema:
+              type: object
+              properties:
+                token:
+                  type: string
+                  description: The old JWT, with a valid `refresh` claim
       responses:
         200:
           $ref: '#/components/responses/Token'
