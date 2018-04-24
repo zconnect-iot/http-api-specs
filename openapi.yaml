@@ -774,6 +774,13 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
+      in: header
+      name: JWT auth
+      description: >
+        ZConnect 2 uses JWT auth with short token lifetimes (circa 5 minutes) in order to log inactive users out quickly when inactive.
+
+        Due to this it's nessesary to call the `token refresh` endpoint to fetch updated tokens on a regular basis. Ordinarily this would be done
+        before each normal request. zconnect-js contains examples of what this may look like.
     ### end ZC2 builtin securitySchemas
 
   parameters:
