@@ -755,9 +755,6 @@ components:
         token:
           type: string
           description: A JWT with an expiry, to be used as a bearer token
-        status:
-          type: string
-          example: "Logged In"
 
     Error:
       title: Error
