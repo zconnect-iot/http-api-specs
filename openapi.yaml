@@ -765,9 +765,9 @@ components:
       - title
       type: object
       properties:
-        title:
+        code:
           type: string
-        description:
+        detail:
           type: string
 
     DateTime:
@@ -1001,8 +1001,8 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/Error'
-        example:
-          {"error": "Unauthorized", "description": "You are not authorized to access this"}
+          example:
+            {"code": "Unauthorized", "detail": "You are not authorized to access this"}
 
     MajorError:
       description: Internal error
@@ -1010,6 +1010,8 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/Error'
+          example:
+            {"code": "exception", "detail": "There was an internal error"}
 
     BadRequest:
       description: A bad request was made, normally incorrect data
