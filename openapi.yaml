@@ -393,8 +393,17 @@ paths:
                   type: string
                   description: Confirmation of the new password for the user
       responses:
-        204:
+        200:
           description: done
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    example: "Password has been reset with the new password."
+                    type: string
+                    description: A message string
         400:
           $ref: '#/components/responses/BadRequest'
 
