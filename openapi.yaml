@@ -331,11 +331,72 @@ paths:
       <<: *user_update
       summary: Update part of a User object
 
-  /v3/users/reset_password:
+  /v3/users/password_reset:
     post:
       tags:
         - Auth
-      summary: Send a password reset email - Awaiting spec
+      summary: Request a password reset
+      security: []
+      description: This will result in an email being sent to the user
+      requestBody:
+        description: The account to reset
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  example: test@example.com
+                  description: A User's email address
+              required:
+                - email
+      responses:
+        200:
+          description: done
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    example: "Password reset e-mail has been sent."
+                    type: string
+                    description: A message string
+        400:
+          $ref: '#/components/responses/BadRequest'
+
+  /v3/users/password_reset/confirm:
+    post:
+      tags:
+        - Auth
+      summary: Complete a password reset
+      security: []
+      description: Sets a new password for the user
+      requestBody:
+        description: The token and details for password setting
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                uid:
+                  type: string
+                  description: The user id of the account we're resetting the password on
+                token:
+                  type: string
+                  description: A one-time token provided in the email from /v3/users/password_reset
+                new_password1:
+                  type: string
+                  description: A new password for the user
+                new_password2:
+                  type: string
+                  description: Confirmation of the new password for the user
+      responses:
+        204:
+          description: done
+        400:
+          $ref: '#/components/responses/BadRequest'
 
   /v3/users/login:
     post:
