@@ -730,6 +730,9 @@ components:
       allOf:
       - $ref: '#/components/schemas/AbstractOwnedModel'
       - properties:
+          name:
+            type: string
+            example: "The office"
           timezone:
             type: string
           latitude:
