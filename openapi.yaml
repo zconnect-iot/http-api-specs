@@ -331,7 +331,7 @@ paths:
       <<: *user_update
       summary: Update part of a User object
 
-  /v3/auth/password_reset:
+  /v3/auth/password/reset:
     post:
       tags:
         - Auth
