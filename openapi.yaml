@@ -331,7 +331,7 @@ paths:
       <<: *user_update
       summary: Update part of a User object
 
-  /v3/users/password_reset:
+  /v3/auth/password_reset:
     post:
       tags:
         - Auth
@@ -366,7 +366,7 @@ paths:
         400:
           $ref: '#/components/responses/BadRequest'
 
-  /v3/users/password_reset/confirm:
+  /v3/auth/password/reset/confirm:
     post:
       tags:
         - Auth
@@ -385,7 +385,7 @@ paths:
                   description: The user id of the account we're resetting the password on
                 token:
                   type: string
-                  description: A one-time token provided in the email from /v3/users/password_reset
+                  description: A one-time token provided in the email from /v3/auth/password_reset
                 new_password1:
                   type: string
                   description: A new password for the user
@@ -407,7 +407,7 @@ paths:
         400:
           $ref: '#/components/responses/BadRequest'
 
-  /v3/users/login:
+  /v3/auth/login:
     post:
       tags:
         - Auth
@@ -436,7 +436,7 @@ paths:
         400:
           $ref: '#/components/responses/BadRequest'
 
-  /v3/users/refresh_token:
+  /v3/auth/refresh_token:
     post:
       tags:
         - Auth
