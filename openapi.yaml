@@ -302,10 +302,22 @@ paths:
     get:
       tags:
         - Organizations
-      summary: Get list of Users in an Organization
+      summary: Get info about a User's Organization membership
       responses:
         200:
           $ref: '#/components/responses/OrganizationMembership'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        404:
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags:
+        - Organizations
+      summary: Remove a User from an Organization
+      responses:
+        204:
+          description: Success
         401:
           $ref: '#/components/responses/Unauthorized'
         404:
