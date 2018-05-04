@@ -256,6 +256,61 @@ paths:
       <<: *product_update # Patch does the same
       summary: Update part of a product
 
+  /v3/organizations/{organization_id}/membership:
+
+    parameters:
+      - $ref: '#/components/parameters/organization_id'
+
+    get:
+      tags:
+        - Organizations
+      summary: Get list of Users in an Organization
+      responses:
+        200:
+          $ref: '#/components/responses/OrganizationMembershipList'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        404:
+          $ref: '#/components/responses/NotFound'
+
+    post:
+      tags:
+        - Organizations
+      summary: Add User to Organization
+      requestBody:
+        description: A membership description
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user:
+                  $ref: '#/components/schemas/UserStub'
+      responses:
+        200:
+          $ref: '#/components/responses/OrganizationMembership'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        404:
+          $ref: '#/components/responses/NotFound'
+
+  /v3/organizations/{organization_id}/membership/{organization_membership_id}:
+    parameters:
+      - $ref: '#/components/parameters/organization_id'
+      - $ref: '#/components/parameters/organization_membership_id'
+
+    get:
+      tags:
+        - Organizations
+      summary: Get list of Users in an Organization
+      responses:
+        200:
+          $ref: '#/components/responses/OrganizationMembership'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        404:
+          $ref: '#/components/responses/NotFound'
+
   /v3/users:
     get:
       tags:
@@ -512,6 +567,16 @@ components:
             id:
               $ref: '#/components/schemas/UserID'
 
+    UserStub:
+      title: UserStub
+      type: object
+      properties:
+        id:
+          type: number
+          example: 121
+        email:
+          type: string
+          example: "alice@example.com"
 
     GroupID:
       title: GroupID
@@ -738,7 +803,7 @@ components:
             type: number
           longitude:
             type: number
-          organisation:
+          organization:
             type: string
           country:
             type: string
@@ -752,6 +817,30 @@ components:
             type: string
           postalcode:
             type: string
+
+    OrganizationID:
+      title: OrganizationID
+      allOf:
+        - $ref: '#/components/schemas/ObjectID'
+
+    OrganizationMembershipID:
+      title: OrganizationMembershipID
+      allOf:
+        - $ref: '#/components/schemas/ObjectID'
+
+    OrganizationMembership:
+      title: OrganizationMembership
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/OrganizationMembershipID'
+        user:
+          $ref: '#/components/schemas/UserStub'
+        created_at:
+          type: string
+          format: date-time
+        is_admin:
+          type: boolean
 
     TimelineEntryID:
       title: MessageID
@@ -779,7 +868,7 @@ components:
 
     ObjectID:
       title: ObjectID
-      type: string
+      type: number
       example: 12
       description: This will often be numerical, however should be treated as a string.
 
@@ -878,6 +967,20 @@ components:
       description: A valid device id
       schema:
         $ref: '#/components/schemas/DeviceID'
+
+    organization_id:
+      name: organization_id
+      in: query
+      description: A valid organization id
+      schema:
+        $ref: '#/components/schemas/OrganizationID'
+
+    organization_membership_id:
+      name: organization_membership_id
+      in: query
+      description: A valid organization_membership_id
+      schema:
+        $ref: '#/components/schemas/OrganizationMembershipID'
 
     event_def_id:
       name: event_def_id
@@ -1038,6 +1141,24 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/Product'
+
+    OrganizationMembershipList:
+      <<: *paged_response
+      description: A list of organization members
+      content:
+        application/json:
+          schema:
+            properties:
+              results:
+                items:
+                  $ref: '#/components/schemas/OrganizationMembership'
+
+    OrganizationMembership:
+      description: An organization membership record
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/OrganizationMembership'
 
     UserList:
       <<: *paged_response
