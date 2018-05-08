@@ -939,7 +939,7 @@ components:
         description:
           type: string
           example: "Open time was less than 10%"
-          description: A message which describes the report. This will be the main content of what happend.
+          description: A message which describes the report. This will be the main content of what happened.
         severity:
           type: number
           example: 20
