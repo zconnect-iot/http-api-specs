@@ -397,6 +397,95 @@ paths:
       <<: *user_update
       summary: Update part of a User object
 
+  /v3/users/{user_id}/subscriptions:
+
+    parameters:
+      - $ref: '#/components/parameters/user_id'
+
+    get:
+      tags:
+        - Activity subscriptions
+      summary: Get all of a user's subscriptions
+      description: "Note: not paged!"
+      responses:
+        200:
+          $ref: '#/components/responses/ActivitySubscriptionList'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        400:
+          $ref: '#/components/responses/BadRequest'
+
+    post:
+      tags:
+        - Activity subscriptions
+      summary: Create an Activity Subscription
+      requestBody:
+        description: The subscription to create
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ActivitySubscription'
+      responses:
+        200:
+          $ref: '#/components/responses/ActivitySubscription'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        400:
+          $ref: '#/components/responses/BadRequest'
+
+  /v3/users/{user_id}/subscriptions/{subscription_id}:
+
+    parameters:
+      - $ref: '#/components/parameters/user_id'
+      - $ref: '#/components/parameters/subscription_id'
+
+    get:
+      tags:
+        - Activity subscriptions
+      summary: Get an Activity Subscription
+      responses:
+        200:
+          $ref: '#/components/responses/ActivitySubscription'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        400:
+          $ref: '#/components/responses/BadRequest'
+
+    put: &activity_subscription_update
+      tags:
+        - Activity subscriptions
+      summary: Update an ActivitySubscription
+      requestBody:
+        description: The subscription to create
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ActivitySubscription'
+      responses:
+        200:
+          $ref: '#/components/responses/ActivitySubscription'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        400:
+          $ref: '#/components/responses/BadRequest'
+
+    patch:
+      <<: *activity_subscription_update
+      summary: Update part of an ActivitySubscription
+
+    delete:
+      tags:
+        - Activity subscriptions
+      summary: Remove an ActivitySubscription
+      responses:
+        204:
+          description: Success
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        400:
+          $ref: '#/components/responses/BadRequest'
+
+
   /v3/auth/password/reset:
     post:
       tags:
@@ -589,6 +678,37 @@ components:
         email:
           type: string
           example: "alice@example.com"
+
+    ActivitySubscriptionID:
+      title: ActivitySubscriptionID
+      allOf:
+        - $ref: '#/components/schemas/ObjectID'
+
+    ActivitySubscription:
+      title: ActivitySubscription
+      type: object
+      description: Stores a definition of a user's subscription to activity stream events on an organization.
+      properties:
+        # User is only held internally
+        #user:
+        #  $ref: '#/components/schemas/UserStub'
+        organization:
+          $ref: '#/components/schemas/OrganizationStub'
+        category:
+          type: string
+          description: The event category, e.g. `business metrics`
+          example: business metrics
+        min_severity:
+          type: number
+          example: 20
+          description: A minimum severity which will trigger the notifiction
+        type:
+          type: string
+          enum:
+            - sms
+            - email
+            - push
+          description: The type for this subscription. Multiple subscriptions can be made for different mediums
 
     GroupID:
       title: GroupID
@@ -835,6 +955,16 @@ components:
       allOf:
         - $ref: '#/components/schemas/ObjectID'
 
+    OrganizationStub:
+      title: OrganizationStub
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/ObjectID'
+        name:
+          type: string
+          example: "My cool Organization"
+
     OrganizationMembershipID:
       title: OrganizationMembershipID
       allOf:
@@ -972,6 +1102,13 @@ components:
       description: A valid user_id
       schema:
         $ref: '#/components/schemas/UserID'
+
+    subscription_id:
+      name: subscription_id
+      in: query
+      description: A valid subscription_id
+      schema:
+        $ref: '#/components/schemas/ActivitySubscriptionID'
 
     device_id:
       name: device_id
@@ -1189,6 +1326,22 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/User'
+
+    ActivitySubscriptionList:
+      description: A list of ActivitySubscriptions
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/ActivitySubscription'
+
+    ActivitySubscription:
+      description: An ActivitySubscription
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ActivitySubscription'
 
     Token:
       description: A login token
