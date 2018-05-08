@@ -190,6 +190,29 @@ paths:
         400:
           $ref: '#/components/responses/BadRequest'
 
+  /v3/device/{device_id}/activity_stream:
+    get:
+      tags:
+        - Device
+      summary: Get a Device's activity stream
+      description: >
+        Activity Streams utilise [Django activity streams](https://github.com/justquick/django-activity-stream) under the hood in
+        order to make a W3 "JSON Activity stream" possible in future. This particular API is customised to the needs of ZConnect 2
+        and as such follows naming conventions of ZConnect in favour of activity streams.
+      parameters:
+        - $ref: '#/components/parameters/device_id'
+        - $ref: '#/components/parameters/start'
+        - $ref: '#/components/parameters/end'
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/page_size'
+      responses:
+        200:
+          $ref: '#/components/responses/ActivityStream'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        400:
+          $ref: '#/components/responses/BadRequest'
+
   /v3/product:
     get:
       tags:
@@ -556,11 +579,6 @@ components:
       allOf:
         - $ref: '#/components/schemas/BaseProduct'
 
-    TimelineEntry:
-      title: TimelineEntry
-      allOf:
-        - $ref: '#/components/schemas/BaseTimelineEntry'
-
     ### ZC2 builtin schemas
     UserID:
       title: UserID
@@ -681,7 +699,14 @@ components:
               type: object
               description: An object of event definitions
               example:
-                add_timeline_entry: {"template_id": 122}
+                activity:
+                  {
+                     "category": "business metric",
+                     "severity": 30,
+                     "notify": true,
+                     "verb": "reported",
+                     "description": "{device.name} was open for less than 10% of the time",
+                  }
             debounce_window:
               type: number
               example: 1000.3
@@ -859,25 +884,6 @@ components:
       allOf:
         - $ref: '#/components/schemas/ObjectID'
 
-    BaseTimelineEntry:
-      title: BaseTimelineEntry
-      type: object
-      allOf:
-      - $ref: '#/components/schemas/AbstractModel'
-      - properties:
-          message:
-            type: string
-            description: "Plain text message string for showing to the user"
-          severity:
-            type: number
-            description: Log level, e.g. 10 = debug, 40 = error.
-          category:
-            type: string
-            description: Arbitrary string, however this may be important to other apps for grouping messages or setting icons.
-          try_notify:
-            type: string
-            description: Should this message be sent to a user
-
     ObjectID:
       title: ObjectID
       type: number
@@ -920,6 +926,37 @@ components:
           type: string
           description: The name of the group
           example: my-great-group
+
+    Action:
+      title: Entry on the activity stream
+      type: object
+      properties:
+        #device - Implied since activities will be listed by device
+        verb:
+          type: string
+          example: "reported"
+          description: The verb for the activity (to comply with activity streams)
+        description:
+          type: string
+          example: "Open time was less than 10%"
+          description: A message which describes the report. This will be the main content of what happend.
+        severity:
+          type: number
+          example: 20
+          description: >
+            The severity of the message, used for formatting the display and also when deciding if we should alert users. e.g. 10 = debug, 40 = error.
+        created_at:
+          type: string
+          format: date-time
+          example: "1998-01-01T01:00:00Z"
+        category:
+          type: string
+          example: "business metric"
+          description: An arbitrary category which is used to categorise and group messages
+        notify:
+          type: boolean
+          example: true
+          description: did this action try to send notifications?
 
     Token:
       title: Access Token
@@ -1135,6 +1172,17 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/TimeSeriesData'
+
+    ActivityStream:
+      <<: *paged_response
+      description: An activity stream
+      content:
+        application/json:
+          schema:
+            properties:
+              results:
+                items:
+                  $ref: '#/components/schemas/Action'
 
     ProductList:
       <<: *paged_response
