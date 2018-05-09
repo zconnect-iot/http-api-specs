@@ -707,6 +707,8 @@ components:
       type: object
       description: Stores a definition of a user's subscription to activity stream events on an organization.
       properties:
+        id:
+          $ref: '#/components/schemas/ObjectID'
         # User is only held internally
         #user:
         #  $ref: '#/components/schemas/UserStub'
@@ -1061,6 +1063,8 @@ components:
       title: Entry on the activity stream
       type: object
       properties:
+        id:
+          $ref: '#/components/schemas/ObjectID'
         #device - Implied since activities will be listed by device
         verb:
           type: string
