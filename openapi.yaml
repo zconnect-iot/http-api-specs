@@ -1255,7 +1255,7 @@ components:
         application/json:
           schema:
             type: object
-            properties:
+            properties: &paged_response_props
               results:
                 type: array
                 items:
@@ -1280,6 +1280,7 @@ components:
         application/json:
           schema:
             properties:
+              <<: *paged_response_props
               results:
                 items:
                   $ref: '#/components/schemas/Device'
@@ -1321,6 +1322,7 @@ components:
         application/json:
           schema:
             properties:
+              <<: *paged_response_props
               results:
                 items:
                   $ref: '#/components/schemas/Action'
@@ -1332,6 +1334,7 @@ components:
         application/json:
           schema:
             properties:
+              <<: *paged_response_props
               results:
                 items:
                   $ref: '#/components/schemas/Product'
@@ -1350,6 +1353,7 @@ components:
         application/json:
           schema:
             properties:
+              <<: *paged_response_props
               results:
                 items:
                   $ref: '#/components/schemas/OrganizationMembership'
@@ -1368,6 +1372,7 @@ components:
         application/json:
           schema:
             properties:
+              <<: *paged_response_props
               results:
                 items:
                   $ref: '#/components/schemas/User'
