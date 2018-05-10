@@ -1011,11 +1011,6 @@ components:
         is_admin:
           type: boolean
 
-    TimelineEntryID:
-      title: MessageID
-      allOf:
-        - $ref: '#/components/schemas/ObjectID'
-
     ObjectID:
       title: ObjectID
       type: number
