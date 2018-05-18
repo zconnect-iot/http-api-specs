@@ -378,7 +378,8 @@ paths:
         401:
           $ref: '#/components/responses/Unauthorized'
         404:
-          $ref: '#/components/responses/NotFound'
+          $ref: '#/components/responses/OrgMembershipNotFound'
+
 
     delete:
       tags:
@@ -390,7 +391,7 @@ paths:
         401:
           $ref: '#/components/responses/Unauthorized'
         404:
-          $ref: '#/components/responses/NotFound'
+          $ref: '#/components/responses/OrgMembershipNotFound'
 
   /v3/users:
     get:
@@ -1483,5 +1484,11 @@ components:
           schema:
             $ref: '#/components/schemas/Error'
 
+    OrgMembershipNotFound:
+      description: The user does not have a membership to this organization, or the organization does not exist, or the user does not exist.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
 
     ### end ZC2 builtin responses
