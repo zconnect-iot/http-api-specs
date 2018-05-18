@@ -346,6 +346,52 @@ paths:
         404:
           $ref: '#/components/responses/NotFound'
 
+  /v3/organizations/{organization_id}/user:
+
+    parameters:
+      - $ref: '#/components/parameters/organization_id'
+
+    get:
+      tags:
+        - Organizations
+      summary: Get list of Users in an Organization
+      responses:
+        200:
+          $ref: '#/components/responses/OrganizationMembershipList'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        404:
+          $ref: '#/components/responses/NotFound'
+
+  /v3/organizations/{organization_id}/user/{user_id}:
+    parameters:
+      - $ref: '#/components/parameters/organization_id'
+      - $ref: '#/components/parameters/user_id'
+
+    get:
+      tags:
+        - Organizations
+      summary: Get info about a User's Organization membership, with lookup by User id
+      responses:
+        200:
+          $ref: '#/components/responses/OrganizationMembership'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        404:
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags:
+        - Organizations
+      summary: Remove a User from an Organization
+      responses:
+        204:
+          description: Success
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        404:
+          $ref: '#/components/responses/NotFound'
+
   /v3/users:
     get:
       tags:
