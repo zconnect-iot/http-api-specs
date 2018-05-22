@@ -401,15 +401,15 @@ paths:
       requestBody:
         description: An image
         content:
-          application/json:
+          multipart/form-data:
             schema:
-              type: object
               properties:
-                user:
-                  $ref: '#/components/schemas/UserStub'
+                image:
+                  type: string
+                  format: binary
       responses:
         200:
-          $ref: '#/components/responses/OrganizationMembership'
+          $ref: '#/components/responses/OrganizationLogo'
         401:
           $ref: '#/components/responses/Unauthorized'
         404:
