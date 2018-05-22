@@ -281,6 +281,37 @@ paths:
       <<: *product_update # Patch does the same
       summary: Update part of a product
 
+  /v3/organizations/:
+
+    get:
+      tags:
+        - Organizations
+      summary: Get list of Organizations
+      responses:
+        200:
+          $ref: '#/components/responses/OrganizationList'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        404:
+          $ref: '#/components/responses/NotFound'
+
+  /v3/organizations/{organization_id}:
+
+    parameters:
+      - $ref: '#/components/parameters/organization_id'
+
+    get:
+      tags:
+        - Organizations
+      summary: Get an Organizations
+      responses:
+        200:
+          $ref: '#/components/responses/Organization'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        404:
+          $ref: '#/components/responses/NotFound'
+
   /v3/organizations/{organization_id}/membership:
 
     parameters:
@@ -348,8 +379,56 @@ paths:
         404:
           $ref: '#/components/responses/NotFound'
 
-  /v3/organizations/{organization_id}/user:
+  /v3/organizations/{organization_id}/logo:
+    parameters:
+      - $ref: '#/components/parameters/organization_id'
 
+    get:
+      tags:
+        - Organizations
+      summary: Get the OrganizationLogo for an Organization
+      responses:
+        200:
+          $ref: '#/components/responses/OrganizationLogo'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        404:
+          $ref: '#/components/responses/NotFound'
+
+    post:
+      tags:
+        - Organizations
+      summary: Add or replace an OrganizationLogo to an Organization
+      requestBody:
+        description: An image
+        content:
+          multipart/form-data:
+            schema:
+              properties:
+                image:
+                  type: string
+                  format: binary
+      responses:
+        200:
+          $ref: '#/components/responses/OrganizationLogo'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        404:
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags:
+        - Organizations
+      summary: Remove the OrganizationLogo from an Organization
+      responses:
+        204:
+          description: Success
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        404:
+          $ref: '#/components/responses/NotFound'
+
+  /v3/organizations/{organization_id}/user:
     parameters:
       - $ref: '#/components/parameters/organization_id'
 
@@ -381,7 +460,6 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         404:
           $ref: '#/components/responses/OrgMembershipNotFound'
-
 
     delete:
       tags:
@@ -913,8 +991,6 @@ components:
               default: false
               description: True if the event definition should be destroyed the first time it's triggered. For one time actions.
 
-
-
     ProductID:
       title: ProductID
       allOf:
@@ -1054,6 +1130,28 @@ components:
       allOf:
         - $ref: '#/components/schemas/ObjectID'
 
+    Organization:
+      title: Organization
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/ObjectID'
+        name:
+          type: string
+          example: "My cool Organization"
+        slug:
+          type: string
+          example: "my-cool-organization"
+        is_active:
+          type: boolean
+        users:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserStub'
+        logo:
+          type: string
+          example: "/files/download/?name=zconnect.LogoImage%2Fbytes%2Ffilename%2Fmimetype%2Fbp_logo.jpg"
+
     OrganizationStub:
       title: OrganizationStub
       type: object
@@ -1082,6 +1180,22 @@ components:
           format: date-time
         is_admin:
           type: boolean
+
+    OrganizationLogoID:
+      title: OrganizationLogoID
+      allOf:
+        - $ref: '#/components/schemas/ObjectID'
+
+    OrganizationLogo:
+      title: OrganizationLogo
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/OrganizationMembershipID'
+        organization:
+          $ref: '#/components/schemas/OrganizationID'
+        image:
+          type: string
 
     ObjectID:
       title: ObjectID
@@ -1247,6 +1361,13 @@ components:
       description: A valid organization_membership_id
       schema:
         $ref: '#/components/schemas/OrganizationMembershipID'
+
+    organization_logo_id:
+      name: organization_logo_id
+      in: query
+      description: A valid organization_logo_id
+      schema:
+        $ref: '#/components/schemas/OrganizationLogoID'
 
     event_def_id:
       name: event_def_id
@@ -1422,6 +1543,25 @@ components:
           schema:
             $ref: '#/components/schemas/Product'
 
+    Organization:
+      description: An organization
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Organization'
+
+    OrganizationList:
+      <<: *paged_response
+      description: A list of organizations
+      content:
+        application/json:
+          schema:
+            properties:
+              <<: *paged_response_props
+              results:
+                items:
+                  $ref: '#/components/schemas/Organization'
+
     OrganizationMembershipList:
       <<: *paged_response
       description: A list of organization members
@@ -1440,6 +1580,13 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/OrganizationMembership'
+
+    OrganizationLogo:
+      description: An organization logo record
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/OrganizationLogo'
 
     UserList:
       <<: *paged_response
