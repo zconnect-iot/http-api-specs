@@ -37,7 +37,9 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Device'
+              allOf:
+                - $ref: '#/components/schemas/RemoveIDField'
+                - $ref: '#/components/schemas/Device'
       responses:
         200:
           $ref: '#/components/responses/Device'
@@ -680,11 +682,34 @@ components:
       allOf:
         - $ref: '#/components/schemas/AbstractModel'
         - required:
-          - name # todo
           - id
+          - email
           properties:
             id:
               $ref: '#/components/schemas/UserID'
+            phone_number:
+              type: string
+              description: An optional phone number for the user
+            email:
+              type: string
+              description: The email address of the user
+              example: a-nu-start@yahoo.com
+            first_name:
+              type: string
+              example: Tobias
+              description: The forename(s) of the user
+            last_name:
+              type: string
+              example: Funke
+              description: The last name of the user
+            username:
+              type: string
+              example: a-nu-start@yahoo.com
+              description: Normally this should be the email address
+            password:
+              type: string
+              example: test_password
+              description: A password for the user which will be hashed and stored - only required if the user is able to login directly
 
     UserStub:
       title: UserStub
@@ -1116,6 +1141,15 @@ components:
       description: An ISO8601 string.
       format: date-time
       example: "1970-01-01T00:00:00Z"
+
+    RemoveIDField:
+      type: object
+      description: "Deletes the id field"
+      properties:
+        id:
+          type: number
+          description: The ID field should be left blank when creating the object. If set an error will be thrown.
+          example: 0
     ### end ZC2 builtin schemas
 
   securitySchemes:
