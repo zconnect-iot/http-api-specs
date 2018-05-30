@@ -861,8 +861,7 @@ components:
               type: array
               description: List of organizations the the user is a part of
               items:
-                type: string
-                example: "Org A"
+                $ref: '#/components/schemas/OrganizationStub'
             groups:
               type: array
               description: List of groups the the user is a part of
