@@ -835,6 +835,40 @@ components:
               type: string
               example: test_password
               description: A password for the user which will be hashed and stored - only required if the user is able to login directly
+            is_active:
+              type: boolean
+              description: Is user active
+              example: true
+            date_joined:
+              type: string
+              format: date-time
+              description: The date time the user joined
+              example: "2018-01-01T01:00:00Z"
+            is_staff:
+              type: boolean
+              description: Is the user a member of staff
+              example: false
+            last_login:
+              type: string
+              format: date-time
+              description: The date time that the user last logged in
+              example: "2018-01-01T01:00:00Z"
+            is_superuser:
+              type: boolean
+              example: false
+              description: Is the user a superuser of the database
+            orgs:
+              type: array
+              description: List of organizations the the user is a part of
+              items:
+                type: string
+                example: "Org A"
+            groups:
+              type: array
+              description: List of groups the the user is a part of
+              items:
+                type: string
+                example: "Group A"
 
     UserStub:
       title: UserStub
@@ -1671,5 +1705,15 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/Error'
+
+    CreateUserConflict:
+      description: Conflict, user already exists
+      content:
+        application/json:
+          schema:
+             type: object
+             properties:
+               id:
+                 $ref: '#/components/schemas/UserID'
 
     ### end ZC2 builtin responses
